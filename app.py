@@ -26,3 +26,16 @@ def create_store():
     new_store = {"name":request_data['name'], "items":[]}
     stores.append(new_store)
     return stores,201
+
+# add new item to existing store
+@app.post("/store/<string:name>/item")
+def create_item(name):
+    request_data = request.get_json()
+    new_item = {'name':request_data['name'],'price':request_data['price']}
+
+    for store in stores:
+        if store['name'] == name:
+            # add new item
+            store['items'].append(new_item)
+            return store['items']
+    return {'message':'error store not found'},404
