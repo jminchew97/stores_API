@@ -39,8 +39,17 @@ def create_item(name):
             store['items'].append(new_item)
             return store['items']
     return {'message':'error store not found'},404
+
+# get specific store info
 @app.get("/store/<string:name>")
 def get_store_info(name):
     for store in stores:
         if store['name'] == name:
             return store
+
+# get specific store info
+@app.get("/store/<string:name>/items")
+def get_store_items(name):
+    for store in stores:
+        if store['name'] == name:
+            return store['items']
