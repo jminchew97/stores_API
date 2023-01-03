@@ -32,8 +32,8 @@ def create_item():
     if ("price" not in item_data 
     or "name" not in item_data 
     or "store_id" not in item_data):
-        abort(404, message="Bas request. Make sure 'price', 'name', and 'store_id' are in JSON payload")
-
+        #abort(404, message="Bas request. Make sure 'price', 'name', and 'store_id' are in JSON payload")
+        return {"message":"JSON does not have store id/name/price of item."}
     # check if item already exists
     for item in items.values():
        if (item_data["name"] == item["name"] and 
@@ -51,6 +51,7 @@ def create_item():
 
     return items, 201
 
+# get all items
 @app.get('/item')
 def get_all_items():
     return {"items":list(items.values())}
@@ -64,10 +65,30 @@ def get_store_info(store_id):
     except KeyError:
         abort(404,message="Store ID not found")
 
-# get specific store items
-@app.get("/items/<string:item_id>")
+# get item
+@app.get("/item/<string:item_id>")
 def get_store_items(item_id):
     try:
-        return items['item_id']
+        return items[item_id]
+    except KeyError:
+        abort(404,message="Item not found")
+
+@app.put("/item/<string:item_id>")
+def edit_item(item_id):
+    json_data = request.get_json()
+    if "name" not in json_data or "price" not in json_data:
+        return {"message":"must include 'name' and 'price' in json data."}
+    try:
+        items[item_id].update(json_data)
+    except KeyError:
+        abort(404,message="Item not found.")
+    return items[item_id]
+
+# delete item
+@app.delete("/item/<string:item_id>")
+def delete_item(item_id):
+    try:
+        del items[item_id]
+        return {"message":"item deleted"}
     except KeyError:
         abort(404,message="Item not found")
