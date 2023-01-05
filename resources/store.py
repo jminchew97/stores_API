@@ -3,12 +3,14 @@ from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from db import stores
+from schemas import StoreSchema
 
 bp = Blueprint("stores",__name__, description="Operation on stores")
 
 """each methodview is """
 @bp.route("/store/<string:store_id>")
 class Store(MethodView):
+    @bp.response(201, StoreSchema)
     def get(self, store_id):
         """Get store information using UUID"""
         try:
@@ -16,9 +18,11 @@ class Store(MethodView):
         except KeyError:
             abort(404,message="Store ID not found")
 
-    def put(self, store_id):
+    @bp.arguments(StoreSchema)
+    @bp.response(201, StoreSchema)
+    def put(self, json_data, store_id):
         """Edit store name using UUID"""
-        json_data = request.get_json()
+        
         if store_id not in stores:
             return {"message":"this store does not exist enter a valid UUID"}
         
@@ -42,15 +46,17 @@ class Store(MethodView):
 
 @bp.route("/store")
 class StoreList(MethodView):
+
+    @bp.response(200, StoreSchema(many=True))
     def get(self):
         """Get all stores"""
-        return {"stores":list(stores.values())}
-    def post(self):
-        """Create store"""
-        store_data = request.get_json()
-        if "name" not in store_data:
-            abort(404, message="must contain store name")
+        return stores.values()
 
+    @bp.arguments(StoreSchema) # using schema for data validation
+    @bp.response(200, StoreSchema)
+    def post(self, store_data):
+        """Create store"""
+        
         for store in stores.values():
             if store_data["name"] == store["name"]:
                 abort(404, message = "Error. Store already exists in DB.")
